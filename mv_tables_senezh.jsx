@@ -21,7 +21,7 @@ with (app) {
 	try {
 		var text = selection[i].parentStory;
 	} catch (error) {
-//		if
+//		if	здесь должна быть учтена ситуация, когда выделена часть текста внутри таблицы. Пока просто выдает ошибку.
 		alert("Курсор должен быть в тексте, но не в таблице" +  " -> " +  selection[i].parent.constructor.name + " -> " +  selection[i].parent.parent.constructor.name);
 		exit();
 	}
@@ -31,11 +31,9 @@ with (app) {
     fixTableWidth(text.tables[i], getColumnWidth(text));
 	}
   }
-
 }
 
 function mvTable(table) {
-//  alert("table style: " + table.appliedTableStyle.name);
   table.clearTableStyleOverrides();
   table.appliedTableStyle = doc.tableStyles.itemByName(MY_TS);
 
@@ -59,16 +57,14 @@ function mvTable(table) {
 	  var hC = table.rows[hR-1].cells.count();
 	  var selection = 0;
 	  for (var i = 0; i < hR; i++){
-//	    table.rows[i].rowType = RowTypes.headerRow;
-		alert("Строку " + i + " добавили в шапку");
- //*/
-	    with(table.rows[i].cells.everyItem()){
+//	    table.rows[i].rowType = RowTypes.headerRow; //Здесь нужно будет разобраться, почему не преобразуются в головные строки (пока только присваивается стиль)
+//		alert("Строку " + i + " добавили в шапку"); 
 
+	    with(table.rows[i].cells.everyItem()){
 	      appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
-		    alert("cell style: " + appliedCellStyle.name); alert("cell style: " + appliedCellStyle.name);
  	      with(paragraphs.everyItem()){
-	  	  applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
-	      }//*/
+			applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
+	      }
 	    
 	    }
 	  }
@@ -135,23 +131,13 @@ function tryNewWidth(column, width, max){
 		w[i] = (w[i] < d) ? d : w[i];
 		alert("мах. длина слова в колонке " + i + ": " + w[i] + ", длина текущего слова" + d);
 	  } //*/
-	  
-function countHeadRows(table){	//считаем головные строки
-/*	var hR = 0;
-	var header = table.rows[hR].cells;
-	var hh
-	for(var i = 0; i < header.length; i++){
-	  hh = header[i].columnSpan;
-	  alert("Cell " + header[i].name + "span from" + hh + "columns");
-	  if (header[i].columnSpan > 1){
-		alert("много колонок")
-	  } else {
-		alert("Cell " + header[i].name + "span from" + header[i].rowSpan + "rows");
-	  }
-	} //*/  return(2);
-  }	  
 
 
+//считаем головные строки, исходя из предположения, что первая ячейка объединяет максимальное количество строк	  
+function countHeadRows(table){
+	return table.rows[0].cells[0].rowSpan;
+  }
+  
 // возвращает ширину первой колонки текста. Спасибо тому, у кого этот кусок позаимстовала.
 function getColumnWidth(text) {
   var tf = text.textColumns[0].parentTextFrames[0];
