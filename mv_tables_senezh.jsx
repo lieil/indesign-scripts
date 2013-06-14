@@ -1,3 +1,5 @@
+//v 0.2
+
 var MY_TS = "Стиль таблицы 1";				//стиль таблицы
 var MY_MC = "МВ Таблица";					//стиль основных ячеек
 var MY_HC = "Головные";						//стиль головных ячеек
@@ -15,7 +17,6 @@ with (app) {
 		exit();
 	}
 	
-  var tableErrs = 0;
   for (var i = 0; i < selection.length; i++){
 	
 	try {
@@ -48,34 +49,25 @@ function mvTable(table) {
 		applyParagraphStyle(doc.paragraphStyles.itemByName(MY_MT), true);
 	  }
 	}
-
 	
-// присвоение стилей головным ячейкам таблицы	
-
+// присвоение стилей головным ячейкам таблицы (почему-то присваивает только первой строке, и иногда одиночной строке не присваивает никаких стилей. В головные преобразует. И к тому же плохо считает ширину этой таблицы)
 	try {
 	  var hR = countHeadRows(table);
-	  var hC = table.rows[hR-1].cells.count();
-	  var selection = 0;
 	  for (var i = 0; i < hR; i++){
-//	    table.rows[i].rowType = RowTypes.headerRow; //Здесь нужно будет разобраться, почему не преобразуются в головные строки (пока только присваивается стиль)
-//		alert("Строку " + i + " добавили в шапку"); 
-
 	    with(table.rows[i].cells.everyItem()){
 	      appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
  	      with(paragraphs.everyItem()){
 			applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
 	      }
-	    
+		  rowType = RowTypes.headerRow;
 	    }
 	  }
-//	  table.headerRowCount = hR;
 	} catch (error) {
 	  if (table.headerRowCount == 1){
-	    alert("o-ops! " + error);
-	    return;
+	    alert("o-ops! Ошибка в однострочной шапке: " + error);
+//	    return;
 	  } else {
-	    alert(error + " " + "in " + ++tableErrs + " tables"); 	// нужно будет проработать вариант, когда шапка состоит из объединенных ячеек 
-											// пока просто считаются таблички, в которых возникает проблема
+	    alert("o-ops! В многострочной шапке тоже ошибка: " + error); 
 	  }
 	}
 }
@@ -83,7 +75,7 @@ function mvTable(table) {
 function fixTableWidth(table, myWidth) {
   var hR = countHeadRows(table);
   maxRow = table.rows[hR].cells.count();
-  alert("Column width: " +  myWidth/maxRow);
+//  alert("Column width: " +  myWidth/maxRow);
 /*  with(table.columns.everyItem()){
     width = myWidth/table.columnCount;
   } //*/
@@ -105,7 +97,7 @@ function fixTableWidth(table, myWidth) {
 //  	alert("Слов в колонке " + i + ": " + m[i]);	
 	c += m[i];
   }
-  alert("Слов в таблице " + i + ": " + c);
+//  alert("Слов в таблице " + i + ": " + c);
   for(var i = 0; i < maxRow; i++){
     var cn = table.rows[hR].columns[i];
     w[i] = myWidth*m[i]/c;
