@@ -1,4 +1,4 @@
-//v 0.2
+//v.0.2
 
 var MY_TS = "Стиль таблицы 1";				//стиль таблицы
 var MY_MC = "МВ Таблица";					//стиль основных ячеек
@@ -50,32 +50,40 @@ function mvTable(table) {
 	  }
 	}
 	
-// присвоение стилей головным ячейкам таблицы (почему-то присваивает только первой строке, и иногда одиночной строке не присваивает никаких стилей. В головные преобразует. И к тому же плохо считает ширину этой таблицы)
-	try {
+// присвоение стилей головным ячейкам таблицы (Возникает ошибка, что не может преобразовать тип строки, однако, в головные преобразует. Пока закомментировано.)
+
 	  var hR = countHeadRows(table);
 	  for (var i = 0; i < hR; i++){
 	    with(table.rows[i].cells.everyItem()){
 	      appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
  	      with(paragraphs.everyItem()){
 			applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
-	      }
-		  rowType = RowTypes.headerRow;
+	      }	
+		  try {
+			  alert(contents);
+			  rowType = RowTypes.headerRow;
+		  } catch (error) {
+/*			  if (table.headerRowCount == 1){
+				alert("o-ops! Ошибка в однострочной шапке: " + error);
+			  } else {
+				alert("o-ops! В многострочной шапке тоже ошибка: " + error); 
+			  }*/
+			}
 	    }
 	  }
-	} catch (error) {
-	  if (table.headerRowCount == 1){
-	    alert("o-ops! Ошибка в однострочной шапке: " + error);
-//	    return;
-	  } else {
-	    alert("o-ops! В многострочной шапке тоже ошибка: " + error); 
-	  }
-	}
+	
 }
 
+// вычисление ширины столбцов в таблице. 
+// Естественно, плохо работает со странными таблицами с перепутанным числом ячеек в шапке и самой таблице.
+// Почему-то поправки ширины при переполнении применяются только на второй раз применения скрипта.
 function fixTableWidth(table, myWidth) {
   var hR = countHeadRows(table);
+  with(table.rows[hR].cells.everyItem()){
+	if(columnSpan > 1) alert(hR++ + ": " + columnSpan);
+  };
   maxRow = table.rows[hR].cells.count();
-//  alert("Column width: " +  myWidth/maxRow);
+//  alert("Column width: " + myWidth/maxRow);
 /*  with(table.columns.everyItem()){
     width = myWidth/table.columnCount;
   } //*/
