@@ -50,60 +50,46 @@ function mvTable(table) {
 	  }
 	}
 	
-// присвоение стилей головным €чейкам таблицы (¬озникает ошибка, что не может преобразовать тип строки, однако, в головные преобразует. ѕока закомментировано.)
-
-	  var hR = countHeadRows(table);
-	  for (var i = 0; i < hR; i++){
+// присвоение стилей головным €чейкам таблицы
+	var hR = countHeadRows(table);
+	  
+	for (var i = 0; i < hR; i++){
 	    with(table.rows[i].cells.everyItem()){
 	      appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
  	      with(paragraphs.everyItem()){
 			applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
 	      }	
-		  try {
-			  alert(contents);
+		  try { //тип строки можно задать только первой €чейке в строке, в остальных - ошибка.
 			  rowType = RowTypes.headerRow;
-		  } catch (error) {
-/*			  if (table.headerRowCount == 1){
-				alert("o-ops! ќшибка в однострочной шапке: " + error);
-			  } else {
-				alert("o-ops! ¬ многострочной шапке тоже ошибка: " + error); 
-			  }*/
-			}
+		  } catch (error){}
 	    }
-	  }
-	
+	}
 }
 
 // вычисление ширины столбцов в таблице. 
 // ≈стественно, плохо работает со странными таблицами с перепутанным числом €чеек в шапке и самой таблице.
 // ѕочему-то поправки ширины при переполнении примен€ютс€ только на второй раз применени€ скрипта.
 function fixTableWidth(table, myWidth) {
-  var hR = countHeadRows(table);
-  with(table.rows[hR].cells.everyItem()){
-	if(columnSpan > 1) alert(hR++ + ": " + columnSpan);
-  };
-  maxRow = table.rows[hR].cells.count();
-//  alert("Column width: " + myWidth/maxRow);
-/*  with(table.columns.everyItem()){
-    width = myWidth/table.columnCount;
-  } //*/
-  var m = [];  // слов в колонках
-  var w = [];  // ширина колонки
-  var c = 0;   // слов всего
-  var o = [];  // есть ли переполнение (фиксирование ширины)
-  var f = 0;   // обща€ ширина фиксированых колонок
-  for(var i = 0; i < maxRow; i++){
-    var cn = table.rows[hR].columns[i];
-	m[i] = 0;
-	w[i] = 0;
-	o[i] = 0;
-	for(var j = 0; j < cn.cells.length; j++){
-	  var cnw = cn.cells[j];
-	  m[i] += parseInt(cnw.words.count());
-//	  alert("—лов в €чейках " + i + ": " + cnw.words.count() + "или " + m[i]);
-	} 
-//  	alert("—лов в колонке " + i + ": " + m[i]);	
-	c += m[i];
+	var hR = findLongestRow(table);
+	var maxRow = table.rows[hR].cells.count();
+	
+	var m = [];  // слов в колонках
+	var w = [];  // ширина колонки
+	var c = 0;   // слов всего
+	var o = [];  // есть ли переполнение (фиксирование ширины)
+	var f = 0;   // обща€ ширина фиксированых колонок
+	for(var i = 0; i < maxRow; i++){
+		var cn = table.rows[hR].columns[i];
+		m[i] = 0;
+		w[i] = 0;
+		o[i] = 0;
+		for(var j = 0; j < cn.cells.length; j++){
+			var cnw = cn.cells[j];
+			m[i] += parseInt(cnw.words.count());
+	//		alert("—лов в €чейках " + i + ": " + cnw.words.count() + "или " + m[i]);
+		} 
+	//  	alert("—лов в колонке " + i + ": " + m[i]);	
+		c += m[i];
   }
 //  alert("—лов в таблице " + i + ": " + c);
   for(var i = 0; i < maxRow; i++){
@@ -126,17 +112,29 @@ function tryNewWidth(column, width, max){
 	}
 	return (column.width);  
 }
-/*	  for(var k = 0; k < cnw.words.length; k++ ){
+/*
+	  for(var k = 0; k < cnw.words.length; k++ ){
 	    var d = cnw.words[k].characters.length;
 		w[i] = (w[i] < d) ? d : w[i];
 		alert("мах. длина слова в колонке " + i + ": " + w[i] + ", длина текущего слова" + d);
 	  } //*/
 
-
 //считаем головные строки, исход€ из предположени€, что перва€ €чейка объедин€ет максимальное количество строк	  
 function countHeadRows(table){
 	return table.rows[0].cells[0].rowSpan;
   }
+
+//находит первую строку после шапки, в которой нет объединенных строк  
+function findLongestRow(table){
+	var hR = countHeadRows(table), r = table.rows[hR].cells;
+	for(var i = 0; i < r.length; i++){
+		if(r[i].columnSpan > 1){
+			hR++;
+			i = 0;
+		}
+	}
+	return hR;
+}
   
 // возвращает ширину первой колонки текста. —пасибо тому, у кого этот кусок позаимстовала.
 function getColumnWidth(text) {
