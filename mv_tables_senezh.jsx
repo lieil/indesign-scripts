@@ -80,29 +80,34 @@ function fixTableWidth(table, myWidth) {
 	var f = 0;   // общая ширина фиксированых колонок
 	for(var i = 0; i < maxRow; i++){
 		var cn = table.rows[hR].columns[i];
-		m[i] = 0;
+		m[i] = 1;
 		w[i] = 0;
 		o[i] = 0;
-		for(var j = 0; j < cn.cells.length; j++){
+		for(var j = i; j < cn.cells.length; j++){
 			var cnw = cn.cells[j];
 			m[i] += parseInt(cnw.words.count());
-	//		alert("Слов в ячейках " + i + ": " + cnw.words.count() + "или " + m[i]);
-		} 
-	//  	alert("Слов в колонке " + i + ": " + m[i]);	
+		alert("Слов в ячейках " + i + ": " + cnw.words.count() + "или " + m[i]);
+		}
+//  	alert("Слов в колонке " + i + ": " + m[i]);	
 		c += m[i];
   }
 //  alert("Слов в таблице " + i + ": " + c);
   for(var i = 0; i < maxRow; i++){
-    var cn = table.rows[hR].columns[i];
+    var cn = table.rows[hR].cells[i];
     w[i] = myWidth*m[i]/c;
 	cn.width = tryNewWidth(cn, w[i], myWidth);
   }
 }
 
 // вспомогательные функции
-function tryNewWidth(column, width, max){
-	column.width = width;
-    for(var j = 0; j < column.cells.length; j++){
+function tryNewWidth(cell, width, max){
+	alert(cell.contents + ", ширина: " + parseInt(width) + ", максимум: " + parseInt(max));
+	try {
+		cell.width = width;
+	} catch (error){
+		alert(error);
+	}
+/*    for(var j = 0; j < column.cells.length; j++){
 //	  alert("переполнение: " + column.cells[j].overflows);
 	  while (column.cells[j].overflows) {
 //	  	alert (column.width);
@@ -110,7 +115,8 @@ function tryNewWidth(column, width, max){
 		if (column.width > max) return(max);
 	  }
 	}
-	return (column.width);  
+*/
+	return (cell.width);  
 }
 /*
 	  for(var k = 0; k < cnw.words.length; k++ ){
