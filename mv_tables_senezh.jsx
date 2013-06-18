@@ -86,7 +86,7 @@ function fixTableWidth(table, myWidth) {
 		for(var j = i; j < cn.cells.length; j++){
 			var cnw = cn.cells[j];
 			m[i] += parseInt(cnw.words.count());
-		alert("Слов в ячейках " + i + ": " + cnw.words.count() + "или " + m[i]);
+//		alert("Слов в ячейках " + i + ": " + cnw.words.count() + "или " + m[i]);
 		}
 //  	alert("Слов в колонке " + i + ": " + m[i]);	
 		c += m[i];
@@ -101,7 +101,7 @@ function fixTableWidth(table, myWidth) {
 
 // вспомогательные функции
 function tryNewWidth(cell, width, max){
-	alert(cell.contents + ", ширина: " + parseInt(width) + ", максимум: " + parseInt(max));
+//	alert(cell.contents + ", ширина: " + parseInt(width) + ", максимум: " + parseInt(max));
 	try {
 		cell.width = width;
 	} catch (error){
