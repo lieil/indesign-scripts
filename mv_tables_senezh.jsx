@@ -38,7 +38,7 @@ function mvTable(table) {
   table.clearTableStyleOverrides();
   table.appliedTableStyle = doc.tableStyles.itemByName(MY_TS);
 
-// присвоение стилей всем €чейкам таблицы
+	// присвоение стилей всем €чейкам таблицы
     with(table.cells.everyItem()){
 	  minimumHeight = 0;
 	  autoGrow = true;
@@ -50,7 +50,7 @@ function mvTable(table) {
 	  }
 	}
 	
-// присвоение стилей головным €чейкам таблицы
+	// присвоение стилей головным €чейкам таблицы
 	var hR = countHeadRows(table);
 	  
 	for (var i = 0; i < hR; i++){
@@ -66,12 +66,11 @@ function mvTable(table) {
 	}
 }
 
-// вычисление ширины столбцов в таблице. 
-// ≈стественно, плохо работает со странными таблицами с перепутанным числом €чеек в шапке и самой таблице.
-// ѕочему-то поправки ширины при переполнении примен€ютс€ только на второй раз применени€ скрипта.
+// вычисление ширины столбцов в таблице (table) под заданную ширину столбца (myWidth)
 function fixTableWidth(table, myWidth) {
 	var hR = findLongestRow(table);
-	var maxRow = table.rows[hR].cells.count();
+	var mrcs = table.rows[hR].cells
+	var maxRow = mrcs.count();
 	
 	var m = [];  // слов в колонках
 	var w = [];  // ширина колонки
@@ -79,43 +78,37 @@ function fixTableWidth(table, myWidth) {
 	var o = [];  // есть ли переполнение (фиксирование ширины)
 	var f = 0;   // обща€ ширина фиксированых колонок
 	for(var i = 0; i < maxRow; i++){
-		var cn = table.rows[hR].columns[i];
-		m[i] = 1;
+		m[i] = 1, 
 		w[i] = 0;
 		o[i] = 0;
-		for(var j = i; j < cn.cells.length; j++){
-			var cnw = cn.cells[j];
-			m[i] += parseInt(cnw.words.count());
-//		alert("—лов в €чейках " + i + ": " + cnw.words.count() + "или " + m[i]);
+		for(var j = 0, cn = mrcs[i].parentColumn.cells; j < cn.length; j++){
+			m[i] += parseInt(cn[j].words.count());
 		}
-//  	alert("—лов в колонке " + i + ": " + m[i]);	
 		c += m[i];
-  }
-//  alert("—лов в таблице " + i + ": " + c);
-  for(var i = 0; i < maxRow; i++){
-    var cn = table.rows[hR].cells[i];
-    w[i] = myWidth*m[i]/c;
-	cn.width = tryNewWidth(cn, w[i], myWidth);
-  }
+	}
+	for(var i = 0; i < maxRow; i++){
+		w[i] = myWidth*m[i]/c;
+		mrcs[i].width = tryNewWidth(mrcs[i], w[i], myWidth);
+	}
 }
 
-// вспомогательные функции
+// "ѕримерка" ширины столбцов и корректировка при переполнении
 function tryNewWidth(cell, width, max){
-//	alert(cell.contents + ", ширина: " + parseInt(width) + ", максимум: " + parseInt(max));
 	try {
 		cell.width = width;
 	} catch (error){
 		alert(error);
 	}
-/*    for(var j = 0; j < column.cells.length; j++){
-//	  alert("переполнение: " + column.cells[j].overflows);
+/*
+    for(var j = 0; j < column.cells.length; j++){
+	  alert("переполнение: " + column.cells[j].overflows);
 	  while (column.cells[j].overflows) {
 //	  	alert (column.width);
 	    column.width += 1;
 		if (column.width > max) return(max);
 	  }
 	}
-*/
+//*/
 	return (cell.width);  
 }
 /*
