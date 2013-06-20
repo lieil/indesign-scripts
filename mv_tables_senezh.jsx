@@ -73,43 +73,38 @@ function fixTableWidth(table, myWidth) {
 	var maxRow = mrcs.count();
 	
 	var m = [];  // слов в колонках
-	var w = [];  // ширина колонки
 	var c = 0;   // слов всего
-	var o = [];  // есть ли переполнение (фиксирование ширины)
+	var fix = [];  // есть ли переполнение (фиксирование ширины)
 	var f = 0;   // общая ширина фиксированых колонок
 	for(var i = 0; i < maxRow; i++){
-		m[i] = 1, 
-		w[i] = 0;
-		o[i] = 0;
+		m[i] = 1;
+		fix[i] = 0;
 		for(var j = 0, cn = mrcs[i].parentColumn.cells; j < cn.length; j++){
 			m[i] += parseInt(cn[j].words.count());
 		}
 		c += m[i];
 	}
 	for(var i = 0; i < maxRow; i++){
-		w[i] = myWidth*m[i]/c;
-		mrcs[i].width = tryNewWidth(mrcs[i], w[i], myWidth);
+		tryNewWidth(mrcs[i], myWidth*m[i]/c, myWidth);
 	}
 }
 
 // "Примерка" ширины столбцов и корректировка при переполнении
 function tryNewWidth(cell, width, max){
-	try {
-		cell.width = width;
-	} catch (error){
-		alert(error);
+//*
+    for(var j = 0, cn = cell.parentColumn.cells; j < cn.length; j++){
+	//	alert("переполнение: " + cn[j].overflows);
+		while (cn[j].overflows) {
+	//	  	alert (column.width);
+			cell.width += 1;
+			if (cell.width > max) {
+				cell.width = max;
+				alert("Таблица не помещается в колонку!")
+				break;
+				}
+		}
 	}
-/*
-    for(var j = 0; j < column.cells.length; j++){
-	  alert("переполнение: " + column.cells[j].overflows);
-	  while (column.cells[j].overflows) {
-//	  	alert (column.width);
-	    column.width += 1;
-		if (column.width > max) return(max);
-	  }
-	}
-//*/
-	return (cell.width);  
+//*/ 
 }
 /*
 	  for(var k = 0; k < cnw.words.length; k++ ){
