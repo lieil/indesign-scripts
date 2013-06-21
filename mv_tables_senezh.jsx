@@ -71,40 +71,58 @@ function fixTableWidth(table, myWidth) {
 	var hR = findLongestRow(table);
 	var mrcs = table.rows[hR].cells
 	var maxRow = mrcs.count();
-	
+	var k = 0;
 	var m = [];  // слов в колонках
 	var c = 0;   // слов всего
 	var fix = [];  // есть ли переполнение (фиксирование ширины)
-	var f = 0;   // общая ширина фиксированых колонок
+	var delta = 0;   // величина переполнения
 	for(var i = 0; i < maxRow; i++){
 		m[i] = 1;
-		fix[i] = 0;
+		fix[i] = false;
 		for(var j = 0, cn = mrcs[i].parentColumn.cells; j < cn.length; j++){
 			m[i] += parseInt(cn[j].words.count());
 		}
 		c += m[i];
 	}
 	for(var i = 0; i < maxRow; i++){
-		tryNewWidth(mrcs[i], myWidth*m[i]/c, myWidth);
+//		alert("Столбец" + i + ": "+ fix[i]);
+		if (!fix[i]){
+			w = ((myWidth*m[i]/c - delta - 4) < 0) ? myWidth*m[i]/c : (myWidth*m[i]/c - delta);
+			alert("Столбец" + i + ": "+ parseInt(w) + "пт, ширина" + parseInt(myWidth*m[i]/c) + ", поправка" + delta);
+			delta = tryNewWidth(mrcs[i], w, myWidth) + (myWidth*m[i]/c - w);
+			if (delta > 0) fix[i] = true;
+		}
+		if ((i >= maxRow-1) && (delta > 0)){
+			alert("Переполнение таблицы, возвращаемся");
+						i = 0;
+			k++;
+			if (k > 3) break;
+		}
 	}
 }
 
 // "Примерка" ширины столбцов и корректировка при переполнении
 function tryNewWidth(cell, width, max){
+	var d = 0;
+	cell.width = width;
 //*
     for(var j = 0, cn = cell.parentColumn.cells; j < cn.length; j++){
-	//	alert("переполнение: " + cn[j].overflows);
-		while (cn[j].overflows) {
-	//	  	alert (column.width);
-			cell.width += 1;
-			if (cell.width > max) {
+		cn[j].contents; //если не обратиться - почему-то не считается overflow.
+		if (cn[j].overflows) {
+//			alert("переполнение: " + cn[j].name + ", " + cn[j].contents);
+//			cn[j].contents;
+			cn[j].width += 1;
+			d++;
+			j--;
+			if (cell.width >= max) {
 				cell.width = max;
 				alert("Таблица не помещается в колонку!")
 				break;
 				}
 		}
 	}
-//*/ 
+//*/
+	return d;
 }
 /*
 	  for(var k = 0; k < cnw.words.length; k++ ){
