@@ -1,6 +1,6 @@
 //v.1.0
 
-var MY_TS = "Стиль таблицы 12";				//стиль таблицы
+var MY_TS = "Стиль таблицы 1";				//стиль таблицы
 var MY_MC = "МВ Таблица";					//стиль основных ячеек
 var MY_HC = "Головные";						//стиль головных ячеек
 var MY_MT = "МВ Шрифт таблицы";				//стиль абзаца основного текста
@@ -15,23 +15,29 @@ with (app) {
 		exit();
 	}
 	
+	var styleFlag = tryStyles(MY_TS, MY_MC, MY_HC, MY_MT, MY_HT) || "";
+	if (styleFlag != ""){
+		alert("Неопределены следующие стили: \"" + styleFlag +"\"");
+		exit();
+	}
+	
 	var OldX_UNITS = doc.viewPreferences.horizontalMeasurementUnits;
 	doc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
 	
-  for (var i = 0; i < selection.length; i++){
-	
-	try {
-		var text = selection[i].parentStory;
-	} catch (error) {
-//		if	здесь должна быть учтена ситуация, когда выделена часть текста внутри таблицы. Пока просто выдает ошибку.
-		alert("Курсор должен быть в тексте, но не в таблице" +  " -> " +  selection[i].parent.constructor.name + " -> " +  selection[i].parent.parent.constructor.name);
-		exit();
-	}
-    alert("Story has " + text.tables.length + " tables");
-	for (var i = 0; i < text.tables.length; i++){
-		mvTable(text.tables[i]);
-		fixTableWidth(text.tables[i], getColumnWidth(text));
+	for (var i = 0; i < selection.length; i++){
+		try {
+			var text = selection[i].parentStory;
+		} catch (error) {
+	//		if	здесь должна быть учтена ситуация, когда выделена часть текста внутри таблицы. Пока просто выдает ошибку.
+			alert("Курсор должен быть в тексте, но не в таблице" +  " -> " +  selection[i].parent.constructor.name + " -> " +  selection[i].parent.parent.constructor.name);
+			exit();
 		}
+		
+		alert("Story has " + text.tables.length + " tables");
+		for (var i = 0; i < text.tables.length; i++){
+			mvTable(text.tables[i]);
+			fixTableWidth(text.tables[i], getColumnWidth(text));
+			}
 	}
 	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
 };
@@ -165,4 +171,25 @@ function getColumnWidth(text) {
   } catch (error) {
     alert(error);
   }	
+}
+
+// проверяет наличие используемых стилей
+function tryStyles(ts, mc, hc, mt, ht){
+	var flag = [false,false,false,false,false];
+	for (var i = 0; i < doc.tableStyles.length; i++){
+		flag[0] = (ts == doc.tableStyles[i].name) || flag[0];
+	}
+	for (var i = 0; i < doc.cellStyles.length; i++){
+		flag[1] = (mc == doc.cellStyles[i].name) || flag[1];
+		flag[2] = (hc == doc.cellStyles[i].name) || flag[2];
+	}
+	for (var i = 0; i < doc.paragraphStyles.length; i++){
+		flag[3] = (mt == doc.paragraphStyles[i].name) || flag[3];
+		flag[4] = (ht == doc.paragraphStyles[i].name) || flag[4];
+	}		
+	for (var i = 0, str = ""; i < 5; i++){
+		if (!flag[i]) str += arguments[i] + ", "; 
+	}
+	str = str.slice(0, -2);
+	return str;
 }
