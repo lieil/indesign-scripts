@@ -25,18 +25,47 @@ with (app) {
 	doc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
 	
 	for (var i = 0; i < selection.length; i++){
-		try {
+//*		
+		var text = getSelectionStory(selection[i]);
+		alert("Выделение: " + text + " для исходного " + selection[i].constructor.name);
+		if (text == undefined || text == "app") {
+			alert("выделение не содержит таблиц");
+			exit();
+		}
+	
+	function getSelectionStory(sel){
+		alert("Проверяем: " + sel.constructor.name);
+		if (sel.constructor.name == "Application") return "app";
+		if (sel.constructor.name != "TextFrame" && sel.parent.constructor.name == "Page"){
+			alert("Я - " + sel.constructor.name + " Мой родитель " + sel.parent.constructor.name + ". Сработало по условию !TextFrame перед Page");
+			return "app";
+		} else {
+			try {
+					var e = sel.parentStory;
+					alert("Мой родитель " + e);
+					return e;
+			} catch(error) {
+				alert("Нет, таблиц в " + sel.constructor.name + " нет... Мой родитель " + sel.parent.constructor.name);
+				getSelectionStory(sel.parent);
+			}	
+		}
+	}
+//		return (sel.parentStory);
+	
+/*/
+	try {
 			var text = selection[i].parentStory;
 		} catch (error) {
 	//		if	здесь должна быть учтена ситуация, когда выделена часть текста внутри таблицы. Пока просто выдает ошибку.
 			alert("Курсор должен быть в тексте, но не в таблице" +  " -> " +  selection[i].parent.constructor.name + " -> " +  selection[i].parent.parent.constructor.name);
 			exit();
 		}
+//*/
 		
 		alert("Story has " + text.tables.length + " tables");
-		for (var i = 0; i < text.tables.length; i++){
-			mvTable(text.tables[i]);
-			fixTableWidth(text.tables[i], getColumnWidth(text));
+		for (var j = 0; j < text.tables.length; j++){
+			mvTable(text.tables[j]);
+			fixTableWidth(text.tables[j], getColumnWidth(text));
 			}
 	}
 	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
