@@ -1,12 +1,10 @@
-//v.0.2
+//v.1.0
 
-var MY_TS = "Стиль таблицы 1";				//стиль таблицы
+var MY_TS = "Стиль таблицы 12";				//стиль таблицы
 var MY_MC = "МВ Таблица";					//стиль основных ячеек
 var MY_HC = "Головные";						//стиль головных ячеек
 var MY_MT = "МВ Шрифт таблицы";				//стиль абзаца основного текста
 var MY_HT = "МВ таблица головные";			//стиль абзаца текста головных ячеек
-
-var MY_Q = "12.4 пт";	//квант ширины
 
 
 with (app) {
@@ -16,6 +14,9 @@ with (app) {
 		alert('No documents are open!');
 		exit();
 	}
+	
+	var OldX_UNITS = doc.viewPreferences.horizontalMeasurementUnits;
+	doc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
 	
   for (var i = 0; i < selection.length; i++){
 	
@@ -28,15 +29,16 @@ with (app) {
 	}
     alert("Story has " + text.tables.length + " tables");
 	for (var i = 0; i < text.tables.length; i++){
-    mvTable(text.tables[i]);
-    fixTableWidth(text.tables[i], getColumnWidth(text));
+		mvTable(text.tables[i]);
+		fixTableWidth(text.tables[i], getColumnWidth(text));
+		}
 	}
-  }
-}
+	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
+};
 
 function mvTable(table) {
-  table.clearTableStyleOverrides();
-  table.appliedTableStyle = doc.tableStyles.itemByName(MY_TS);
+	table.clearTableStyleOverrides();
+	table.appliedTableStyle = doc.tableStyles.itemByName(MY_TS);
 
 	// присвоение стилей всем ячейкам таблицы
     with(table.cells.everyItem()){
@@ -55,13 +57,13 @@ function mvTable(table) {
 	  
 	for (var i = 0; i < hR; i++){
 	    with(table.rows[i].cells.everyItem()){
-	      appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
- 	      with(paragraphs.everyItem()){
-			applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
-	      }	
-		  try { //тип строки можно задать только первой ячейке в строке, в остальных - ошибка.
-			  rowType = RowTypes.headerRow;
-		  } catch (error){}
+			appliedCellStyle = doc.cellStyles.itemByName(MY_HC);
+			with(paragraphs.everyItem()){
+				applyParagraphStyle(doc.paragraphStyles.itemByName(MY_HT), true);
+			}	
+			try { //тип строки можно задать только первой ячейке в строке, в остальных - ошибка.
+				rowType = RowTypes.headerRow;
+			} catch (error){};
 	    }
 	}
 }
@@ -69,60 +71,61 @@ function mvTable(table) {
 // вычисление ширины столбцов в таблице (table) под заданную ширину столбца (myWidth)
 function fixTableWidth(table, myWidth) {
 	var hR = findLongestRow(table);
-	var mrcs = table.rows[hR].cells
+	var mrcs = table.rows[hR].cells;
 	var maxRow = mrcs.count();
-	var k = 0;
 	var m = [];  // слов в колонках
 	var c = 0;   // слов всего
-	var fix = [];  // есть ли переполнение (фиксирование ширины)
-	var delta = 0;   // величина переполнения
+	var fix = [];  // переполнение
+	var d = 0; // величина переполнения
 	for(var i = 0; i < maxRow; i++){
-		m[i] = 1;
-		fix[i] = false;
+		m[i] = 0;
+		fix[i] = 0;
 		for(var j = 0, cn = mrcs[i].parentColumn.cells; j < cn.length; j++){
 			m[i] += parseInt(cn[j].words.count());
-		}
+		} // надо бы еще учесть, что слова в шапке принадлежат не первой колонке, а всем равномерно.
 		c += m[i];
 	}
-	for(var i = 0; i < maxRow; i++){
-//		alert("Столбец" + i + ": "+ fix[i]);
-		if (!fix[i]){
-			w = ((myWidth*m[i]/c - delta - 4) < 0) ? myWidth*m[i]/c : (myWidth*m[i]/c - delta);
-			alert("Столбец" + i + ": "+ parseInt(w) + "пт, ширина" + parseInt(myWidth*m[i]/c) + ", поправка" + delta);
-			delta = tryNewWidth(mrcs[i], w, myWidth) + (myWidth*m[i]/c - w);
-			if (delta > 0) fix[i] = true;
+	for(var i = 0, colWidth = 0; i < maxRow; i++){
+		colWidth = myWidth*m[i]/c;
+		mrcs[i].width = colWidth;
+		d += tryNewWidth(mrcs[i], myWidth);			
+		if (colWidth < mrcs[i].width) fix[i] = mrcs[i].width - colWidth;
+	}
+	if (d > 1){
+		for(var i = 0, colWidth = 0; i < maxRow; i++){
+			if(fix[i] <= 0){
+				colWidth = mrcs[i].width;
+				mrcs[i].width = ((colWidth - d) > 0) ? (colWidth - d) : 1;
+				tryNewWidth(mrcs[i], myWidth);
+				d += mrcs[i].width - colWidth;
+			}
 		}
-		if ((i >= maxRow-1) && (delta > 0)){
-			alert("Переполнение таблицы, возвращаемся");
-						i = 0;
-			k++;
-			if (k > 3) break;
-		}
+		if (d > 1) 	alert("Извините, я не могу так сильно сжать эту таблицу! Не влазит " + parseInt(d) + "pt");
+	}
+
+	with(table.cells.everyItem()){
+		minimumHeight = 0;
+		autoGrow = true;
 	}
 }
 
 // "Примерка" ширины столбцов и корректировка при переполнении
-function tryNewWidth(cell, width, max){
-	var d = 0;
-	cell.width = width;
-//*
+function tryNewWidth(cell, max){
+	var delta = 0;
     for(var j = 0, cn = cell.parentColumn.cells; j < cn.length; j++){
 		cn[j].contents; //если не обратиться - почему-то не считается overflow.
 		if (cn[j].overflows) {
-//			alert("переполнение: " + cn[j].name + ", " + cn[j].contents);
-//			cn[j].contents;
 			cn[j].width += 1;
-			d++;
+			delta++;
 			j--;
 			if (cell.width >= max) {
 				cell.width = max;
-				alert("Таблица не помещается в колонку!")
-				break;
+				alert("Таблица не помещается в колонку!");
+				return max;
 				}
 		}
 	}
-//*/
-	return d;
+	return delta;
 }
 /*
 	  for(var k = 0; k < cnw.words.length; k++ ){
