@@ -1,4 +1,4 @@
-//v.1.0
+//v.1.2
 
 var MY_TS = "Стиль таблицы 1";				//стиль таблицы
 var MY_MC = "МВ Таблица";					//стиль основных ячеек
@@ -25,43 +25,12 @@ with (app) {
 	doc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
 	
 	for (var i = 0; i < selection.length; i++){
-//*		
 		var text = getSelectionStory(selection[i]);
-		alert("Выделение: " + text + " для исходного " + selection[i].constructor.name);
 		if (text == undefined || text == "app") {
-			alert("выделение не содержит таблиц");
+			alert("Укажите текстовый блок!");
 			exit();
 		}
 	
-	function getSelectionStory(sel){
-		alert("Проверяем: " + sel.constructor.name);
-		if (sel.constructor.name == "Application") return "app";
-		if (sel.constructor.name != "TextFrame" && sel.parent.constructor.name == "Page"){
-			alert("Я - " + sel.constructor.name + " Мой родитель " + sel.parent.constructor.name + ". Сработало по условию !TextFrame перед Page");
-			return "app";
-		} else {
-			try {
-					var e = sel.parentStory;
-					alert("Мой родитель " + e);
-					return e;
-			} catch(error) {
-				alert("Нет, таблиц в " + sel.constructor.name + " нет... Мой родитель " + sel.parent.constructor.name);
-				getSelectionStory(sel.parent);
-			}	
-		}
-	}
-//		return (sel.parentStory);
-	
-/*/
-	try {
-			var text = selection[i].parentStory;
-		} catch (error) {
-	//		if	здесь должна быть учтена ситуация, когда выделена часть текста внутри таблицы. Пока просто выдает ошибку.
-			alert("Курсор должен быть в тексте, но не в таблице" +  " -> " +  selection[i].parent.constructor.name + " -> " +  selection[i].parent.parent.constructor.name);
-			exit();
-		}
-//*/
-		
 		alert("Story has " + text.tables.length + " tables");
 		for (var j = 0; j < text.tables.length; j++){
 			mvTable(text.tables[j]);
@@ -162,12 +131,6 @@ function tryNewWidth(cell, max){
 	}
 	return delta;
 }
-/*
-	  for(var k = 0; k < cnw.words.length; k++ ){
-	    var d = cnw.words[k].characters.length;
-		w[i] = (w[i] < d) ? d : w[i];
-		alert("мах. длина слова в колонке " + i + ": " + w[i] + ", длина текущего слова" + d);
-	  } //*/
 
 //считаем головные строки, исходя из предположения, что первая ячейка объединяет максимальное количество строк	  
 function countHeadRows(table){
@@ -221,4 +184,18 @@ function tryStyles(ts, mc, hc, mt, ht){
 	}
 	str = str.slice(0, -2);
 	return str;
+}
+
+// Находим основную текстовую Story
+function getSelectionStory(sel){
+	if (sel.constructor.name == "Application") return "app";
+	if (sel.constructor.name != "TextFrame" && sel.parent.constructor.name == "Page"){
+		return "app";
+	} else {
+		try {
+				return sel.parentStory;
+		} catch(error) {
+			return getSelectionStory(sel.parent);
+		}	
+	}
 }
