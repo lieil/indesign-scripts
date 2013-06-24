@@ -82,7 +82,7 @@ function fixTableWidth(table, myWidth) {
 	var fix = [];  // переполнение
 	var d = 0; // величина переполнения
 	for(var i = 0; i < maxRow; i++){
-		m[i] = 0;
+		m[i] = 1;
 		fix[i] = 0;
 		for(var j = 0, cn = mrcs[i].parentColumn.cells; j < cn.length; j++){
 			m[i] += parseInt(cn[j].words.count());
@@ -139,11 +139,15 @@ function countHeadRows(table){
 
 //находит первую строку после шапки, в которой нет объединенных строк  
 function findLongestRow(table){
-	var hR = countHeadRows(table), r = table.rows[hR].cells;
+	var hR = countHeadRows(table);
+	if  (hR >= table.rows.count() - 1) return table.rows.count() - 1;
+	var r = table.rows[hR].cells;
 	for(var i = 0; i < r.length; i++){
 		if(r[i].columnSpan > 1){
+			if  (hR >= table.rows.count() - 1) return table.rows.count() - 1;
 			hR++;
 			i = 0;
+			r = table.rows[hR].cells;
 		}
 	}
 	return hR;
