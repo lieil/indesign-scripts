@@ -27,17 +27,18 @@ with (app) {
 	for (var i = 0; i < selection.length; i++){
 		var text = getSelectionStory(selection[i]);
 		if (text == undefined || text == "app") {
-			alert("Укажите текстовый блок!");
-			exit();
+			corrExit("Укажите текстовый блок!");
 		}
 	
 		alert("Story has " + text.tables.length + " tables");
 		for (var j = 0; j < text.tables.length; j++){
+			var over = text.overflows;
+			alert (over);
 			mvTable(text.tables[j]);
-			fixTableWidth(text.tables[j], getColumnWidth(text));
+			fixTableWidth(text.tables[j], getColumnWidth(text), over);
 			}
 	}
-	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
+	corrExit();
 };
 
 function mvTable(table) {
@@ -73,7 +74,7 @@ function mvTable(table) {
 }
 
 // вычисление ширины столбцов в таблице (table) под заданную ширину столбца (myWidth)
-function fixTableWidth(table, myWidth) {
+function fixTableWidth(table, myWidth, over) {
 	var hR = findLongestRow(table);
 	var mrcs = table.rows[hR].cells;
 	var maxRow = mrcs.count();
@@ -89,24 +90,30 @@ function fixTableWidth(table, myWidth) {
 		} // надо бы еще учесть, что слова в шапке принадлежат не первой колонке, а всем равномерно.
 		c += m[i];
 	}
-	for(var i = 0, colWidth = 0; i < maxRow; i++){
-		colWidth = myWidth*m[i]/c;
-		mrcs[i].width = colWidth;
-		d += tryNewWidth(mrcs[i], myWidth);			
-		if (colWidth < mrcs[i].width) fix[i] = mrcs[i].width - colWidth;
-	}
-	if (d > 1){
+	if ( over){ //если блок переполнен
 		for(var i = 0, colWidth = 0; i < maxRow; i++){
-			if(fix[i] <= 0){
-				colWidth = mrcs[i].width;
-				mrcs[i].width = ((colWidth - d) > 0) ? (colWidth - d) : 1;
-				tryNewWidth(mrcs[i], myWidth);
-				d += mrcs[i].width - colWidth;
-			}
+			colWidth = myWidth*m[i]/c;
+			mrcs[i].width = colWidth;
 		}
-		if (d > 1) 	alert("Извините, я не могу так сильно сжать эту таблицу! Не влазит " + parseInt(d) + "pt");
+	} else {
+		for(var i = 0, colWidth = 0; i < maxRow; i++){
+			colWidth = myWidth*m[i]/c;
+			mrcs[i].width = colWidth;
+			d += tryNewWidth(mrcs[i], myWidth);			
+			if (colWidth < mrcs[i].width) fix[i] = mrcs[i].width - colWidth;
+		}
+		if (d > 1){
+			for(var i = 0, colWidth = 0; i < maxRow; i++){
+				if(fix[i] <= 0){
+					colWidth = mrcs[i].width;
+					mrcs[i].width = ((colWidth - d) > 0) ? (colWidth - d) : 1;
+					tryNewWidth(mrcs[i], myWidth);
+					d += mrcs[i].width - colWidth;
+				}
+			}
+			if (d > 1) 	alert("Извините, я не могу так сильно сжать эту таблицу! Не влазит " + parseInt(d) + "pt");
+		}
 	}
-
 	with(table.cells.everyItem()){
 		minimumHeight = 0;
 		autoGrow = true;
@@ -197,9 +204,15 @@ function getSelectionStory(sel){
 		return "app";
 	} else {
 		try {
-				return sel.parentStory;
+			return sel.parentStory;
 		} catch(error) {
 			return getSelectionStory(sel.parent);
 		}	
 	}
 }
+
+function corrExit(mess){
+	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
+	if ((mess != "") && (mess != undefined) ) alert(mess);
+	exit();
+	}
