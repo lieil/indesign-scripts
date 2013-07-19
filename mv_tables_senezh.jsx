@@ -33,7 +33,7 @@ with (app) {
 		alert("Story has " + text.tables.length + " tables");
 		for (var j = 0; j < text.tables.length; j++){
 			var over = text.overflows;
-			alert (over);
+//			alert (over);
 			mvTable(text.tables[j]);
 			fixTableWidth(text.tables[j], getColumnWidth(text), over);
 			}
