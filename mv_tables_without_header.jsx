@@ -34,8 +34,13 @@ with (app) {
 		for (var j = 0; j < text.tables.length; j++){
 			var over = text.overflows;
 //			alert (over);
-			mvTable(text.tables[j]);
-			fixTableWidth(text.tables[j], getColumnWidth(text), over);
+			if(text.tables[j].cells.length ==1){
+				text.tables[j].convertToText(' ', '\r');
+				j--;
+				} else {
+					mvTable(text.tables[j]);
+					fixTableWidth(text.tables[j], getColumnWidth(text), over);
+				}
 			}
 	}
 	corrExit();
@@ -58,7 +63,7 @@ function mvTable(table) {
 	}
 	
 	// присвоение стилей головным €чейкам таблицы
-	var hR = countHeadRows(table);
+/*	var hR = countHeadRows(table);
 	  
 	for (var i = 0; i < hR; i++){
 	    with(table.rows[i].cells.everyItem()){
@@ -70,7 +75,7 @@ function mvTable(table) {
 				rowType = RowTypes.headerRow;
 			} catch (error){};
 	    }
-	}
+	}*/
 }
 
 // вычисление ширины столбцов в таблице (table) под заданную ширину столбца (myWidth)
