@@ -18,7 +18,7 @@
 /* после этого можно запускать sZam
 /*/
 
-//стилевые константы
+// стилевые константы
 S_HEADER = "Header_stih"; //заголовок стиха
 S_DATA = "date"; // дата создания стиха
 S_INSCRIBE = "inscribe";  // стиль строки с посвящением
@@ -42,16 +42,32 @@ with (app) {
 	
 	try {
 		
+		for (var i = 0; i < selection.length; i++){
+		var text = getSelectionStory(selection[i]);
+			if (text == undefined || text == "app") {
+				corrExit("Укажите текстовый блок!");
+			}
+		}
+		alert("!");
+		findHeader(text);
 	} catch (error) {
-		alert('error');
-		exit();
+		corrExit();
 	}
 
 }	
 
+function findHeader(story){
+	with(story.paragraphs.everyItem()){
+		for(i = 0; i<characters.length; i++){
+			if (characters[i].contents != "и"){
+			alert(contents);
+			}
+		}
+	}
+}
+
 // проверяет наличие используемых стилей
 function tryStyles(styles){
-	alert(arguments.length);
 	var flag = [];
 	for(j = 0; j < 6; j++){
 		flag[j] = false;
@@ -65,3 +81,24 @@ function tryStyles(styles){
 	str = str.slice(0, -2);
 	return str;
 }
+
+// Находим основную текстовую Story
+function getSelectionStory(sel){
+	if (sel.constructor.name == "Application") return "app";
+	if (sel.constructor.name != "TextFrame" && sel.parent.constructor.name == "Page"){
+		return "app";
+	} else {
+		try {
+			return sel.parentStory;
+		} catch(error) {
+			return getSelectionStory(sel.parent);
+		}	
+	}
+}
+
+
+function corrExit(mess){
+//	doc.viewPreferences.horizontalMeasurementUnits = OldX_UNITS;
+	if ((mess != "") && (mess != undefined) ) alert(mess);
+	exit();
+	}
